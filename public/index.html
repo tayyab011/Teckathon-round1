@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏢 Office Live Dashboard</title>
+    <!-- Socket.IO ক্লায়েন্ট লাইব্রেরি -->
+    <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background: #f4f7fc; padding: 20px; }
+        .container { max-width: 1300px; margin: 0 auto; }
+        h1 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .power-meter { background: #1e293b; color: white; padding: 15px 25px; border-radius: 50px; font-weight: bold; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 25px; }
+        .room-card { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .room-title { font-size: 22px; font-weight: 700; margin-bottom: 10px; border-bottom: 3px solid #eee; padding-bottom: 10px; }
+        .device-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f0f0f0; }
+        .device-name { font-weight: 500; }
+        .badge { padding: 6px 14px; border-radius: 30px; font-size: 13px; font-weight: 600; }
+        .badge.on { background: #10b981; color: white; }
+        .badge.off { background: #e2e8f0; color: #475569; }
+        .fan-icon { display: inline-block; transition: transform 0.1s; }
+        .fan-icon.spin { animation: spin 1s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        .light-icon { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 8px; }
+        .light-icon.on { background: #fbbf24; box-shadow: 0 0 15px #fbbf24; }
+        .light-icon.off { background: #cbd5e1; }
+        .alert-box { background: #fef2f2; border-left: 6px solid #ef4444; padding: 15px 20px; border-radius: 12px; margin-top: 20px; color: #991b1b; display: none; }
+        .alert-box.show { display: block; }
+        .timestamp { font-size: 14px; color: #64748b; margin-top: 15px; text-align: right; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>
+        <span>🏢 Office Live Monitor</span>
+        <span class="power-meter" id="totalPowerDisplay">⚡ 0 W</span>
+    </h1>
+    
+    <div id="alertContainer" class="alert-box">⚠️ <span id="alertMessage">Devices left ON after office hours!</span></div>
+
+    <div class="grid" id="roomContainer">
+        <!-- JS ডায়নামিক্যালি রুমগুলো এখানে বসাবে -->
+    </div>
+    <div class="timestamp" id="lastUpdated">Last updated: Just now</div>
+</div>
+
+<script>
+    const socket = io('http://localhost:5000'); // ব্যাকেন্ডের সাথে কানেক্ট
+
+    // রুমের ডাটা আপডেট করার ফাংশন
+    function updateDashboard(devices) {
+        const rooms = ["Drawing Room", "Work Room 1", "Work Room 2"];
+        const container = document.getElementById('roomContainer');
+        let totalPower = 0;
+        let html = '';
+
+        rooms.forEach(room => {
+            const roomDevices = devices.filter(d => d.room === room);
+            const roomPower = roomDevices.reduce((sum, d) => sum + d.currentPower, 0);
+            totalPower += roomPower;
+
+            html += `<div class="room-card"><div class="room-title">🛋️ ${room}</div>`;
+            roomDevices.forEach(d => {
+                const isOn = d.status === 'on';
+                // আলাদা আইকন: ফ্যানের জন্য স্পিন অ্যানিমেশন, লাইটের জন্য গ্লো
+                let iconHtml = '';
+                if (d.type === 'fan') {
+                    iconHtml = `<span class="fan-icon ${isOn ? 'spin' : ''}" style="font-size:20px;">🌀</span>`;
+                } else {
+                    iconHtml = `<span class="light-icon ${isOn ? 'on' : 'off'}"></span>`;
+                }
+                html += `
+                    <div class="device-item">
+                        <div>${iconHtml} ${d.name}</div>
+                        <div>
+                            <span class="badge ${isOn ? 'on' : 'off'}">${isOn ? '🟢 ON' : '⚪ OFF'}</span>
+                            <span style="margin-left:10px; font-size:14px; color:#475569;">${d.currentPower}W</span>
+                        </div>
+                    </div>
+                `;
+            });
+            html += `<div style="margin-top:10px; font-weight:600; color:#1e293b;">🔌 Room Power: ${roomPower} W</div></div>`;
+        });
+
+        container.innerHTML = html;
+        document.getElementById('totalPowerDisplay').innerHTML = `⚡ ${totalPower} W`;
+        document.getElementById('lastUpdated').innerHTML = `Last updated: ${new Date().toLocaleTimeString()}`;
+
+        // ------- অ্যালার্ট চেক (Bonus Feature) -------
+        const now = new Date();
+        const hour = now.getHours();
+        const isOfficeHour = hour >= 9 && hour < 17;
+        const alertBox = document.getElementById('alertContainer');
+        const alertMsg = document.getElementById('alertMessage');
+
+        let alertText = '';
+        let showAlert = false;
+
+        if (!isOfficeHour) {
+            const onDevices = devices.filter(d => d.status === 'on');
+            if (onDevices.length > 0) {
+                const names = onDevices.map(d => `${d.name} (${d.room})`).join(', ');
+                alertText = `⏰ অফিস আওয়ার শেষ! এখনও চালু আছে: ${names}`;
+                showAlert = true;
+            }
+        }
+
+        // Bonus: কোনো রুমের সব ডিভাইস ২ ঘন্টা বেশি অন থাকলে অ্যালার্ট (সিমুলেশনের জন্য টাইমস্ট্যাম্প চেক করা যায়নি, ডেমোর জন্য ডামি)
+        // তবে টাইমস্ট্যাম্প চেক করে লাগাতে পারেন।
+        
+        if (showAlert) {
+            alertBox.classList.add('show');
+            alertMsg.innerText = alertText;
+        } else {
+            alertBox.classList.remove('show');
+        }
+    }
+
+    // Socket থেকে আপডেট আসলে UI বদলাবে
+    socket.on('device_update', (data) => {
+        updateDashboard(data);
+    });
+
+    // প্রথমবার লোড হওয়ার সময় API থেকে ডাটা এনে বসাই (যদি Socket একটু দেরি করে)
+    fetch('http://localhost:5000/api/devices')
+        .then(res => res.json())
+        .then(data => updateDashboard(data));
+</script>
+</body>
+</html>
