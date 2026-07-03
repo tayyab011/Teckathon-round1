@@ -1,0 +1,116 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" font-family="Segoe UI, system-ui, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 -5 10 10" refX="9" refY="0" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,-5L10,0L0,5" fill="#475569"/>
+    </marker>
+    <linearGradient id="boxGrad1" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#2563eb"/>
+    </linearGradient>
+    <linearGradient id="boxGrad2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+    <linearGradient id="boxGrad3" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#8b5cf6"/>
+      <stop offset="100%" stop-color="#7c3aed"/>
+    </linearGradient>
+    <linearGradient id="boxGrad4" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="3" stdDeviation="4" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1000" height="620" fill="#f8fafc" rx="16"/>
+
+  <!-- Title -->
+  <text x="500" y="42" text-anchor="middle" font-size="22" font-weight="700" fill="#1e293b">System Architecture Diagram</text>
+
+  <!-- === Layer 1: Simulated Devices === -->
+  <rect x="60" y="80" width="230" height="140" rx="14" fill="white" stroke="#3b82f6" stroke-width="2" filter="url(#shadow)"/>
+  <rect x="60" y="80" width="230" height="36" rx="14" fill="url(#boxGrad1)"/>
+  <rect x="60" y="102" width="230" height="14" fill="url(#boxGrad1)"/>
+  <text x="175" y="104" text-anchor="middle" font-size="15" font-weight="600" fill="white">Simulated Devices</text>
+  <text x="175" y="142" text-anchor="middle" font-size="13" fill="#475569">3 Rooms × 5 Devices</text>
+  <text x="175" y="162" text-anchor="middle" font-size="12" fill="#64748b">Lights (15W) &amp; Fans (60W)</text>
+  <text x="175" y="182" text-anchor="middle" font-size="12" fill="#64748b">Random toggle every 5-10s</text>
+  <text x="175" y="202" text-anchor="middle" font-size="12" fill="#64748b">State changes with timestamps</text>
+
+  <!-- Arrow: Devices → Backend -->
+  <line x1="290" y1="150" x2="390" y2="150" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="340" y="140" text-anchor="middle" font-size="11" fill="#64748b">state changes</text>
+
+  <!-- === Layer 2: Backend === -->
+  <rect x="400" y="65" width="240" height="200" rx="14" fill="white" stroke="#10b981" stroke-width="2" filter="url(#shadow)"/>
+  <rect x="400" y="65" width="240" height="36" rx="14" fill="url(#boxGrad2)"/>
+  <rect x="400" y="87" width="240" height="14" fill="url(#boxGrad2)"/>
+  <text x="520" y="89" text-anchor="middle" font-size="15" font-weight="600" fill="white">Backend (Server.js)</text>
+  <text x="520" y="126" text-anchor="middle" font-size="13" font-weight="600" fill="#065f46">Express + Socket.IO</text>
+  <text x="520" y="148" text-anchor="middle" font-size="12" fill="#475569">REST API Endpoints:</text>
+  <text x="520" y="166" text-anchor="middle" font-size="11" fill="#64748b">GET /api/devices</text>
+  <text x="520" y="180" text-anchor="middle" font-size="11" fill="#64748b">GET /api/devices/room/:room</text>
+  <text x="520" y="194" text-anchor="middle" font-size="11" fill="#64748b">GET /api/usage</text>
+  <text x="520" y="208" text-anchor="middle" font-size="11" fill="#64748b">GET /api/alerts</text>
+  <text x="520" y="230" text-anchor="middle" font-size="11" fill="#64748b">WebSocket: device_update,</text>
+  <text x="520" y="244" text-anchor="middle" font-size="11" fill="#64748b">new_alert, alerts_update, usage_update</text>
+
+  <!-- Arrow: Backend → Dashboard -->
+  <line x1="400" y1="130" x2="320" y2="130" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="400" y1="150" x2="320" y2="150" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="360" y="120" text-anchor="end" font-size="11" fill="#64748b">WebSocket push</text>
+
+  <!-- === Layer 3: Web Dashboard (back arrow) === -->
+  <rect x="60" y="310" width="230" height="140" rx="14" fill="white" stroke="#8b5cf6" stroke-width="2" filter="url(#shadow)"/>
+  <rect x="60" y="310" width="230" height="36" rx="14" fill="url(#boxGrad3)"/>
+  <rect x="60" y="332" width="230" height="14" fill="url(#boxGrad3)"/>
+  <text x="175" y="334" text-anchor="middle" font-size="15" font-weight="600" fill="white">Web Dashboard</text>
+  <text x="175" y="372" text-anchor="middle" font-size="13" fill="#475569">Real-time Device Status</text>
+  <text x="175" y="392" text-anchor="middle" font-size="12" fill="#64748b">Per-room power breakdown</text>
+  <text x="175" y="410" text-anchor="middle" font-size="12" fill="#64748b">Alerts panel</text>
+  <text x="175" y="428" text-anchor="middle" font-size="12" fill="#64748b">Office floor plan overlay</text>
+
+  <!-- Arrow: Backend → Discord Bot -->
+  <line x1="640" y1="130" x2="740" y2="130" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="690" y="120" text-anchor="middle" font-size="11" fill="#64748b">REST API</text>
+
+  <!-- === Layer 4: Discord Bot === -->
+  <rect x="750" y="80" width="200" height="130" rx="14" fill="white" stroke="#f59e0b" stroke-width="2" filter="url(#shadow)"/>
+  <rect x="750" y="80" width="200" height="36" rx="14" fill="url(#boxGrad4)"/>
+  <rect x="750" y="102" width="200" height="14" fill="url(#boxGrad4)"/>
+  <text x="850" y="104" text-anchor="middle" font-size="15" font-weight="600" fill="white">Discord Bot</text>
+  <text x="850" y="142" text-anchor="middle" font-size="13" fill="#475569">Commands:</text>
+  <text x="850" y="160" text-anchor="middle" font-size="12" fill="#64748b">!status — Room summaries</text>
+  <text x="850" y="178" text-anchor="middle" font-size="12" fill="#64748b">!room — Room details</text>
+  <text x="850" y="196" text-anchor="middle" font-size="12" fill="#64748b">!usage — Power &amp; kWh</text>
+
+  <!-- Arrow: Bot → Dashboard -->
+  <line x1="750" y1="150" x2="640" y2="150" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="695" y="162" text-anchor="middle" font-size="11" fill="#64748b">same data</text>
+
+  <!-- Proactive alerts bubble -->
+  <rect x="750" y="230" width="200" height="40" rx="10" fill="#fef2f2" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="4"/>
+  <text x="850" y="248" text-anchor="middle" font-size="12" fill="#991b1b">Proactive alerts (bonus)</text>
+  <text x="850" y="262" text-anchor="middle" font-size="11" fill="#991b1b">Background polling /api/alerts</text>
+  <line x1="850" y1="230" x2="850" y2="210" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="4"/>
+
+  <!-- === Users === -->
+  <rect x="180" y="500" width="260" height="70" rx="14" fill="white" stroke="#1e293b" stroke-width="2" filter="url(#shadow)"/>
+  <text x="310" y="535" text-anchor="middle" font-size="15" font-weight="600" fill="#1e293b">Users</text>
+  <text x="310" y="555" text-anchor="middle" font-size="12" fill="#64748b">View dashboard or query via Discord</text>
+
+  <line x1="310" y1="580" x2="310" y2="470" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="320" y="530" font-size="11" fill="#64748b">interact</text>
+  <line x1="310" y1="450" x2="310" y2="500" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="325" y="478" font-size="11" fill="#64748b">view</text>
+
+  <!-- Dashboard to user arrow -->
+  <line x1="175" y1="450" x2="175" y2="500" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="310" y1="450" x2="310" y2="500" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Data flow labels -->
+  <text x="500" y="570" text-anchor="middle" font-size="12" fill="#94a3b8">Single Source of Truth: Backend API + WebSocket</text>
+</svg>
