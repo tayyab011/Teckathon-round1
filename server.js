@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
@@ -7,19 +8,18 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "*", // Dashboard যেন যেকোনো পোর্ট থেকে কানেক্ট করতে পারে
+    origin: "*",
     methods: ["GET", "POST"],
   },
 });
 
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
-// Dashboard এর HTML ফাইল serve করার জন্য (এখনই বানাবেন)
 app.use(express.static("public"));
 
-// ---------- ১. ডিভাইসের ডাটা ----------
+// ---------- 1. Device Data ----------
 const rooms = ["Drawing Room", "Work Room 1", "Work Room 2"];
 let devices = [];
 let deviceIdCounter = 1;
@@ -53,12 +53,27 @@ rooms.forEach((room) => {
   }
 });
 
-console.log(`✅ মোট ${devices.length} টি ডিভাইস সিমুলেট করা হচ্ছে।`);
+console.log(`Total devices simulated: ${devices.length}`);
 
-// ---------- ২. ডিভাইস টগল ও ব্রডকাস্ট ফাংশন ----------
+// ---------- 2. Usage Tracking (kWh estimation) ----------
+let usageHistory = { totalKwh: 0, lastUpdateTime: Date.now(), lastTotalWatts: 0 };
+
+function updateUsage() {
+  const now = Date.now();
+  const elapsedHours = (now - usageHistory.lastUpdateTime) / 3600000;
+  if (elapsedHours > 0) {
+    const kwhUsed = (usageHistory.lastTotalWatts * elapsedHours) / 1000;
+    usageHistory.totalKwh += kwhUsed;
+  }
+  usageHistory.lastUpdateTime = now;
+  usageHistory.lastTotalWatts = devices.reduce((sum, d) => sum + d.currentPower, 0);
+}
+
+// ---------- 3. Device Toggle & Broadcast ----------
 function toggleDevices() {
+  updateUsage();
   const numChanges = Math.floor(Math.random() * 3) + 1;
-  const shuffled = devices.sort(() => 0.5 - Math.random());
+  const shuffled = [...devices].sort(() => 0.5 - Math.random());
   const selected = shuffled.slice(0, numChanges);
 
   selected.forEach((device) => {
@@ -66,53 +81,145 @@ function toggleDevices() {
     device.status = newStatus;
     device.currentPower = newStatus === "on" ? device.powerDrawWhenOn : 0;
     device.lastChanged = new Date().toISOString();
-    console.log(
-      `🔄 ${device.name} (${device.room}) -> ${newStatus.toUpperCase()}`,
-    );
+    console.log(`${device.name} (${device.room}) -> ${newStatus.toUpperCase()}`);
   });
 
-  // 🔥 সব কানেক্টেড ক্লায়েন্টকে (Dashboard) আপডেট পাঠান
+  updateUsage();
   io.emit("device_update", devices);
+  io.emit("usage_update", getUsageData());
 }
 
-// প্রতি ৫-১০ সেকেন্ড পর পর টগল হবে
 setInterval(toggleDevices, Math.floor(Math.random() * 5000) + 5000);
 
-// ---------- ৩. API (পূর্বের মতো) ----------
+// ---------- 4. Alert Engine ----------
+let alerts = [];
+let alertIdCounter = 1;
+
+function checkAfterHours() {
+  const hour = new Date().getHours();
+  if (hour < 9 || hour >= 17) {
+    devices.filter(d => d.status === "on").forEach(d => {
+      const exists = alerts.find(a => a.message.includes(d.id) && !a.resolved && a.type === "after-hours");
+      if (!exists) {
+        alerts.push({
+          id: alertIdCounter++,
+          message: `${d.name} (${d.room}) is ON after office hours!`,
+          timestamp: new Date().toISOString(),
+          resolved: false,
+          type: "after-hours",
+        });
+      }
+    });
+  }
+}
+
+function checkLongOn() {
+  const now = Date.now();
+  devices.filter(d => d.status === "on").forEach(d => {
+    const changed = new Date(d.lastChanged).getTime();
+    const hoursOn = (now - changed) / 3600000;
+    if (hoursOn > 2) {
+      const exists = alerts.find(a => a.message.includes(d.id) && !a.resolved && a.type === "long-on");
+      if (!exists) {
+        alerts.push({
+          id: alertIdCounter++,
+          message: `${d.name} (${d.room}) has been ON for ${hoursOn.toFixed(1)} hours!`,
+          timestamp: new Date().toISOString(),
+          resolved: false,
+          type: "long-on",
+        });
+      }
+    }
+  });
+}
+
+function resolveResolvedAlerts() {
+  const hour = new Date().getHours();
+  if (hour >= 9 && hour < 17) {
+    alerts.filter(a => a.type === "after-hours" && !a.resolved).forEach(a => {
+      const deviceOn = devices.some(d => d.status === "on" && a.message.includes(d.id));
+      if (!deviceOn) {
+        a.resolved = true;
+      }
+    });
+  }
+
+  alerts.filter(a => a.type === "long-on" && !a.resolved).forEach(a => {
+    const device = devices.find(d => a.message.includes(d.id));
+    if (!device || device.status === "off") {
+      a.resolved = true;
+    }
+  });
+}
+
+function runAlertCheck() {
+  const prevAlertCount = alerts.filter(a => !a.resolved).length;
+  checkAfterHours();
+  checkLongOn();
+  resolveResolvedAlerts();
+  const newAlerts = alerts.filter(a => !a.resolved && a.id > (alerts._lastPushedId || 0));
+  alerts._lastPushedId = alerts.filter(a => !a.resolved).reduce((max, a) => Math.max(max, a.id), 0);
+  newAlerts.forEach(a => io.emit("new_alert", a));
+  if (alerts.filter(a => !a.resolved).length !== prevAlertCount) {
+    io.emit("alerts_update", alerts.filter(a => !a.resolved));
+  }
+}
+
+setInterval(runAlertCheck, 30000);
+
+// ---------- 5. REST API Endpoints ----------
+
 app.get("/api/devices", (req, res) => res.json(devices));
 
-app.get("/api/summary", (req, res) => {
-  let totalPower = 0;
+app.get("/api/devices/room/:room", (req, res) => {
+  const roomName = req.params.room.replace(/[-_]/g, " ");
+  const matched = devices.filter(d => d.room.toLowerCase() === roomName.toLowerCase());
+  if (matched.length === 0) {
+    return res.status(404).json({ error: "Room not found" });
+  }
+  res.json(matched);
+});
+
+app.get("/api/usage", (req, res) => {
+  updateUsage();
+  res.json(getUsageData());
+});
+
+function getUsageData() {
+  const totalPower = devices.reduce((sum, d) => sum + d.currentPower, 0);
   const roomBreakdown = {};
   rooms.forEach((room) => {
-    const roomDevices = devices.filter((d) => d.room === room);
+    const roomDevices = devices.filter(d => d.room === room);
     const roomPower = roomDevices.reduce((sum, d) => sum + d.currentPower, 0);
     roomBreakdown[room] = {
       totalPower: roomPower,
-      lightsOn: roomDevices.filter(
-        (d) => d.type === "light" && d.status === "on",
-      ).length,
-      fansOn: roomDevices.filter((d) => d.type === "fan" && d.status === "on")
-        .length,
+      lightsOn: roomDevices.filter(d => d.type === "light" && d.status === "on").length,
+      fansOn: roomDevices.filter(d => d.type === "fan" && d.status === "on").length,
     };
-    totalPower += roomPower;
   });
-  res.json({
+  return {
     totalPowerWatts: totalPower,
     totalPowerKw: parseFloat((totalPower / 1000).toFixed(2)),
+    estimatedKwhToday: parseFloat(usageHistory.totalKwh.toFixed(3)),
     rooms: roomBreakdown,
     timestamp: new Date().toISOString(),
-  });
+  };
+}
+
+app.get("/api/alerts", (req, res) => {
+  const active = alerts.filter(a => !a.resolved);
+  res.json(active);
 });
 
-// ---------- ৪. Socket.IO কানেকশন ----------
+// ---------- 6. Socket.IO Connection ----------
 io.on("connection", (socket) => {
-  console.log("✅ Dashboard কানেক্ট হয়েছে!");
-  // কানেক্ট হওয়ার সাথে সাথে বর্তমান ডাটা পাঠান
+  console.log("Dashboard connected!");
   socket.emit("device_update", devices);
+  socket.emit("usage_update", getUsageData());
+  socket.emit("alerts_update", alerts.filter(a => !a.resolved));
 });
 
-// সার্ভার চালু
+// ---------- 7. Start Server ----------
 server.listen(PORT, "0.0.0.0", () => {
-  console.log(`🚀 Server চালু: http://localhost:${PORT}`);
+  console.log(`Server running: http://localhost:${PORT}`);
 });
