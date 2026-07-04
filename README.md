@@ -324,7 +324,7 @@ Full API reference with request/response examples: **[API.md](./API.md)**
 
 <!-- Insert ER diagram PNG here -->
 <p align="center">
-  <img src="https://ibb.co.com/JRKq6sjK"  width="900">
+  <img src="https://github.com/tayyab011/Teckathon-round1/blob/c93c2c49a892a9820701f58e9eada69522f3755f/dbschema.jpeg"  width="900">
 </p>
 
 ### Tables
