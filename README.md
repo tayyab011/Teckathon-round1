@@ -70,7 +70,8 @@ A comprehensive **Smart Office Energy Management System** with real-time monitor
 <!-- Recommended: Record a 30-60s screen capture showing dashboard, toggles, WebSocket updates, alerts, and Discord bot responses -->
 
 <p align="center">
-  <i>(Screenshot or animated GIF of the live dashboard — drag & drop into this space)</i>
+  <img src="https://github.com/tayyab011/Teckathon-round1/blob/e4288e53d44df519297efd1d059e00a06b031a77/demo.jpeg" />
+
 </p>
 
 ### Dashboard Preview
