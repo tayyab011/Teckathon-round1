@@ -480,13 +480,13 @@ Hardware scaling: 1 ESP32 per room (manages 5+ devices locally), central server 
 
 ---
 
-## Team
+## 👥 Team
 
-| Role | Name | Links |
-|------|------|-------|
-| **Developer** | [Your Name] | [GitHub](https://github.com/yourusername) · [LinkedIn](https://linkedin.com/in/yourprofile) |
-
-*Built for Teckathon Round 1*
+| Role | Name | GitHub |
+|------|------|--------|
+| **Developer** | **Md Sami** | [@Sami001-OG](https://github.com/Sami001-OG) |
+| **Developer** | **Md Tayyab** | [@tayyab011](https://github.com/tayyab011) |
+| **Developer** | **Tashin Ahmed** | [@Tahsin-Ahmed-53](https://github.com/Tahsin-Ahmed-53) |
 
 ---
 
