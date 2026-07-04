@@ -135,7 +135,7 @@ For server + Discord bot: `npm run dev`
 <!-- Insert professional architecture diagram PNG here -->
 <!-- Use draw.io, Excalidraw, or Figma to create and export as PNG -->
 <p align="center">
- <img src="https://github.com/tayyab011/Teckathon-round1/blob/591aae2f6149f573d7862f5b91a48ae861ed3dcc/file_00000000d394720794611c9a748ecc37.png" />
+ <img src="https://github.com/tayyab011/Teckathon-round1/blob/061d8263593302486ac6905f9204a413b4b428ec/archi1.jpeg" />
   
 </p>
 
@@ -451,19 +451,6 @@ npm test    # Runs all 12 power/calc unit tests
 
 ## Demo Guide
 
-### 3-Minute Scripted Pitch for Judges
-
-| Time | Section | What to Show | Key Talking Points |
-|------|---------|-------------|-------------------|
-| 0:00-0:30 | **Problem + Overview** | Dashboard with 0W baseline | "Offices waste 30% of energy — no real-time visibility exists" |
-| 0:30-1:00 | **Device Control** | Toggle lights/fans via dashboard | "Sub-100ms WebSocket updates across all connected clients" |
-| 1:00-1:30 | **Floor Plan + Charts** | Animated floor plan, trend graph | "Visual feedback with glowing lights, spinning fans, live Chart.js" |
-| 1:30-2:00 | **Alerts + Discord** | Trigger alert, show Discord push | "Persistent alerts with severity levels — pushed to Discord in real-time" |
-| 2:00-2:30 | **AI Features** | Recommendation, efficiency score | "AI-powered insights — works with or without an API key via fallback engine" |
-| 2:30-3:00 | **Architecture + Wrap** | Show modular structure | "Production-ready: modular services, 12 tests, PM2/Docker deployable" |
-
----
-
 ## Scalability
 
 | Dimension | Current | How to Scale |
@@ -518,7 +505,7 @@ Hardware scaling: 1 ESP32 per room (manages 5+ devices locally), central server 
 
 <!-- Insert hardware schematic PNG here -->
 <p align="center">
-  <i>(Drag & drop your hardware schematic here as schematic.png)</i>
+<img src="https://github.com/tayyab011/Teckathon-round1/blob/061d8263593302486ac6905f9204a413b4b428ec/schematic%202.jpeg"/>
 </p>
 
 <p align="center">
