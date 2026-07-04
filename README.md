@@ -135,7 +135,8 @@ For server + Discord bot: `npm run dev`
 <!-- Insert professional architecture diagram PNG here -->
 <!-- Use draw.io, Excalidraw, or Figma to create and export as PNG -->
 <p align="center">
-  <i>(Drag & drop your architecture diagram here as architecture.png)</i>
+ <img src="https://github.com/tayyab011/Teckathon-round1/blob/591aae2f6149f573d7862f5b91a48ae861ed3dcc/file_00000000d394720794611c9a748ecc37.png" />
+  
 </p>
 
 ### System Diagram
