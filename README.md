@@ -324,7 +324,7 @@ Full API reference with request/response examples: **[API.md](./API.md)**
 
 <!-- Insert ER diagram PNG here -->
 <p align="center">
-  <i>(Drag & drop your ER diagram here as er-diagram.png)</i>
+  <img src="https://ibb.co.com/JRKq6sjK"  width="900">
 </p>
 
 ### Tables
