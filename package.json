@@ -1,12 +1,14 @@
 {
   "name": "office-simulator",
-  "version": "1.0.0",
-  "description": "Office Device Simulator for Hackathon",
+  "version": "2.0.0",
+  "description": "Smart Office Energy Management System - Teckathon Submission",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "bot": "node discord-bot.js",
-    "dev": "concurrently \"node server.js\" \"node discord-bot.js\""
+    "dev": "concurrently \"node server.js\" \"node discord-bot.js\"",
+    "test": "node tests/power.test.js",
+    "lint": "echo 'No linter configured yet'"
   },
   "dependencies": {
     "better-sqlite3": "^12.11.1",
